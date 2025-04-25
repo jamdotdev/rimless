@@ -1,15 +1,17 @@
 {
-  "name": "rimless",
+  "name": "@jam.dev/rimless",
   "author": "Aurélien Franky",
   "version": "0.4.0",
   "license": "MIT",
-  "homepage": "https://github.com/au-re/rimless",
+  "homepage": "https://github.com/jamdotdev/rimless",
   "description": "event base communication made easy with a promise-based API wrapping `postMessage`",
   "type": "module",
   "main": "lib/rimless.js",
   "module": "lib/rimless.js",
   "types": "lib/index.d.ts",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -22,7 +24,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/au-re/rimless.git"
+    "url": "git+https://github.com/jamdotdev/rimless.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.7.0",
