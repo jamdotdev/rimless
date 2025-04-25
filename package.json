@@ -1,7 +1,7 @@
 {
   "name": "@jam/rimless",
   "author": "Aurélien Franky",
-  "version": "0.4.2-0",
+  "version": "0.4.3-0",
   "license": "MIT",
   "homepage": "https://github.com/jamdotdev/rimless",
   "description": "event base communication made easy with a promise-based API wrapping `postMessage`",
