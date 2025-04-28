@@ -160,26 +160,28 @@ export function getTargetHost(): any {
  * @param message The message to send
  * @param origin Optional origin for iframe communication
  */
-export function postMessageToTarget(target: Target, message: any, origin?: string): void {
+export function postMessageToTarget(target: Target, message: any, origin?: string, transferables?: Transferable[]): void {
   if (!target) {
     throw new Error("Rimless Error: No target specified for postMessage");
   }
 
+  const transfer: Transferable[] = transferables ?? [];
+
   // Node.js Worker
   if (isNodeEnv() && target === parentPort) {
-    target.postMessage(JSON.parse(JSON.stringify(message)));
+    target.postMessage(JSON.parse(JSON.stringify(message)), {transfer});
     return;
   }
 
   // Web Worker
   if (isWorker()) {
-    target.postMessage(JSON.parse(JSON.stringify(message)));
+    target.postMessage(JSON.parse(JSON.stringify(message)), {transfer});
     return;
   }
 
   // iframe or window
   if (target.postMessage) {
-    target.postMessage(JSON.parse(JSON.stringify(message)), { targetOrigin: origin || "*" });
+    target.postMessage(JSON.parse(JSON.stringify(message)), { targetOrigin: origin || "*" , transfer});
     return;
   }
 

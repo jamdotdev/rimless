@@ -1,4 +1,5 @@
 import { addEventListener, generateId, getEventData, postMessageToTarget, removeEventListener, set } from "./helpers";
+import { isWithTransferables } from "./transferable";
 import {
   actions,
   Environment,
@@ -31,6 +32,7 @@ export function registerLocalMethods(
     async function handleCall(event: any) {
       const eventData = getEventData(event);
       const { action, callID, connectionID, callName, args = [] } = eventData as RPCRequestPayload;
+      const transferables: Transferable[] = [];
 
       if (action !== actions.RPC_REQUEST) return;
       if (!callID || !callName) return;
@@ -53,6 +55,11 @@ export function registerLocalMethods(
         if (!result) {
           // if the result is falsy (null, undefined, "", etc), set it directly
           payload.result = result;
+        } else if (isWithTransferables(result)) {
+          const {value, transferables: resultTransferables} = result.unwrap();
+
+          payload.result = value;
+          transferables.push(...resultTransferables);
         } else {
           // otherwise parse a stringified version of it
           payload.result = JSON.parse(JSON.stringify(result));
@@ -62,7 +69,7 @@ export function registerLocalMethods(
         payload.error = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
       }
 
-      postMessageToTarget(sendTo, payload, event?.origin);
+      postMessageToTarget(sendTo, payload, event?.origin, transferables);
     }
 
     // subscribe to the call event
@@ -93,7 +100,7 @@ export function createRPC(
   listenTo: Environment,
   sendTo: Target
 ) {
-  return (...args: any) => {
+  return (...args: unknown[]) => {
     return new Promise((resolve, reject) => {
       const requestID = generateId();
 
@@ -112,10 +119,24 @@ export function createRPC(
         if (action === actions.RPC_REJECT) return reject(error);
       }
 
+      const argValues: unknown[] = [];
+      const transferables: Transferable[] = [];
+
+      args.forEach((arg, index) => {
+        if (isWithTransferables(arg)) {
+          const {value: argValue, transferables: argTransferables} = arg.unwrap();
+
+          argValues[index] = argValue;
+          transferables.push(...argTransferables);
+        } else {
+          argValues[index] = arg;
+        }
+      });
+
       // send the RPC request with arguments
       const payload = {
         action: actions.RPC_REQUEST,
-        args: JSON.parse(JSON.stringify(args)),
+        args: JSON.parse(JSON.stringify(argValues)),
         callID: requestID,
         callName: rpcCallName,
         connectionID: rpcConnectionID,
@@ -124,7 +145,7 @@ export function createRPC(
       addEventListener(listenTo, events.MESSAGE, handleResponse);
       listeners.push(() => removeEventListener(listenTo, events.MESSAGE, handleResponse));
 
-      postMessageToTarget(sendTo, payload, event?.origin);
+      postMessageToTarget(sendTo, payload, event?.origin, transferables);
     });
   };
 }
