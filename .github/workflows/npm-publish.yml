@@ -1,10 +1,13 @@
 name: Publish to NPM
 on:
   release:
-    types: [published]
+    # when created or published
+    types: [created, published]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Only run for non-draft versions
+    if: github.event.release.draft == false && startsWith(github.event.release.tag_name, 'v')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
