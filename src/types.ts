@@ -66,10 +66,11 @@ export interface RPCResolvePayload {
   connectionID: string;
 }
 
-export interface EventHandlers {
+export type GuestConnectOptions = {
+  hostTarget?: Target;
   onConnectionSetup: (remote: Schema) => Promise<void>;
-}
+};
 
 export type Guest = WorkerLike | HTMLIFrameElement;
-export type Target = Window | WorkerLike;
-export type Environment = Window | WorkerLike;
+export type Target = Window | WorkerLike | MessagePort;
+export type Environment = Window | WorkerLike | MessagePort;
