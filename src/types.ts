@@ -5,6 +5,7 @@ export interface NodeWorker {
   terminate(): void;
 }
 
+// `SharedWorker` is not `WorkerLike`, because it must be messaged through a port
 export type WorkerLike = Worker | NodeWorker;
 
 export enum events {
@@ -68,9 +69,9 @@ export interface RPCResolvePayload {
 
 export type GuestConnectOptions = {
   hostTarget?: Target;
-  onConnectionSetup: (remote: Schema) => Promise<void>;
+  onConnectionSetup?: (remote: Schema) => Promise<void>;
 };
 
-export type Guest = WorkerLike | HTMLIFrameElement;
+export type Guest = WorkerLike | HTMLIFrameElement | SharedWorker;
 export type Target = Window | WorkerLike | MessagePort;
 export type Environment = Window | WorkerLike | MessagePort;
