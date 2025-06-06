@@ -1,13 +1,22 @@
 name: Publish to NPM
 on:
+  # when releases are published
   release:
-    # when created or published
-    types: [created, published]
+    types: [published]
+  # or it is called by another workflow
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
     # Only run for non-draft versions
-    if: github.event.release.draft == false && startsWith(github.event.release.tag_name, 'v')
+    if: |
+      github.event_name == 'workflow_call' ||
+      (github.event_name == 'release' &&
+       github.event.release.draft == false &&
+       startsWith(github.event.release.tag_name, 'v'))
     steps:
       - name: Checkout
         uses: actions/checkout@v4
