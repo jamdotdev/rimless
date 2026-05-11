@@ -11,11 +11,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Only run for non-draft versions
+    # When invoked via `workflow_call`, `github.event_name` reflects the
+    # ROOT triggering event of the caller (e.g. `pull_request`), NOT
+    # `workflow_call` — so a `== 'workflow_call'` check never matches.
+    # Trust the caller's own gating in that case; only re-check
+    # draft/tag-prefix when fired directly by a `release` event.
     if: |
-      github.event_name == 'workflow_call' ||
-      (github.event_name == 'release' &&
-       github.event.release.draft == false &&
+      github.event_name != 'release' ||
+      (github.event.release.draft == false &&
        startsWith(github.event.release.tag_name, 'v'))
     steps:
       - name: Checkout

@@ -67,10 +67,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Use the app token (not the default GITHUB_TOKEN) so the resulting
+      # `release: [published]` event can trigger downstream workflows
+      # (e.g. npm-publish.yml directly). Events fired by GITHUB_TOKEN
+      # do not trigger other workflows — see
+      # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+      # The publish chain here already routes around this via workflow_call,
+      # but using the app token keeps the release path symmetric and lets a
+      # human re-cut a release without breaking the npm publish.
       - name: Create a GitHub Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
           tag_name: v${{ steps.bump-version.outputs.new_version }}
           release_name: v${{ steps.bump-version.outputs.new_version }}
