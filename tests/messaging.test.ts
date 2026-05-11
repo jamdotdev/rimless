@@ -55,6 +55,40 @@ describe("isNodeWorker and isWorkerLike", () => {
   });
 });
 
+describe("isSharedWorker", () => {
+  afterEach(() => {
+    vi.resetModules();
+  });
+
+  it("returns false (without throwing) when SharedWorker is not defined", async () => {
+    const original = (globalThis as any).SharedWorker;
+    delete (globalThis as any).SharedWorker;
+    try {
+      const helpers = await loadHelpers();
+      expect(() => helpers.isSharedWorker({} as any)).not.toThrow();
+      expect(helpers.isSharedWorker({} as any)).toBe(false);
+    } finally {
+      if (original !== undefined) {
+        (globalThis as any).SharedWorker = original;
+      }
+    }
+  });
+
+  it("detects SharedWorker instances when the global is present", async () => {
+    class FakeSharedWorker {
+      port = {};
+    }
+    (globalThis as any).SharedWorker = FakeSharedWorker as any;
+    try {
+      const helpers = await loadHelpers();
+      expect(helpers.isSharedWorker(new FakeSharedWorker() as any)).toBe(true);
+      expect(helpers.isSharedWorker({} as any)).toBe(false);
+    } finally {
+      delete (globalThis as any).SharedWorker;
+    }
+  });
+});
+
 describe("generateId", () => {
   it("creates ids of requested length", async () => {
     const helpers = await loadHelpers();
