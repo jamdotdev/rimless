@@ -6,6 +6,7 @@ import {
   getOriginFromURL,
   isNodeEnv,
   isNodeWorker,
+  isSharedWorker,
   isWorkerLike,
   postMessageToTarget,
   removeEventListener,
@@ -50,7 +51,7 @@ function connect(guest: Guest, schema: Schema = {}): Promise<Connection> {
   const guestIsWorker = isWorkerLike(guest);
 
   const listenTo =
-    guestIsWorker || isNodeEnv() ? (guest as Worker) : guest instanceof SharedWorker ? guest.port : window;
+    guestIsWorker || isNodeEnv() ? (guest as Worker) : isSharedWorker(guest) ? guest.port : window;
 
   return new Promise((resolve) => {
     const connectionID = generateId();
@@ -58,7 +59,7 @@ function connect(guest: Guest, schema: Schema = {}): Promise<Connection> {
     // on handshake request
     function handleHandshake(event: any) {
       const sendTo =
-        guestIsWorker || isNodeEnv() ? (guest as Worker) : guest instanceof SharedWorker ? guest.port : event.source;
+        guestIsWorker || isNodeEnv() ? (guest as Worker) : isSharedWorker(guest) ? guest.port : event.source;
 
       if (!guestIsWorker && !isNodeEnv() && !isValidTarget(guest, event)) return;
 

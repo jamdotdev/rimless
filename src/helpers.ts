@@ -200,6 +200,13 @@ export function isWorkerLike(guest: Guest): guest is WorkerLike {
   return isNodeWorker(guest) || (typeof Worker !== "undefined" && guest instanceof Worker);
 }
 
+// `SharedWorker` is unavailable on mobile Safari, in-app WebViews, and
+// hardened browser modes. Bare `instanceof SharedWorker` throws ReferenceError
+// in those runtimes; gate the check with `typeof`.
+export function isSharedWorker(guest: Guest): guest is SharedWorker {
+  return typeof SharedWorker !== "undefined" && guest instanceof SharedWorker;
+}
+
 export function addEventListener(target: Target, event: string, handler: EventListenerOrEventListenerObject) {
   if (isNodeWorker(target)) {
     target.on(event, handler);
