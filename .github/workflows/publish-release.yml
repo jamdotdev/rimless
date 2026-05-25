@@ -90,5 +90,8 @@ jobs:
   publish-package:
     needs: publish-release
     uses: ./.github/workflows/npm-publish.yml
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # npm Trusted Publishing (OIDC) — no NPM_TOKEN secret needed.
+    # The called workflow declares `permissions: id-token: write` itself.
+    permissions:
+      id-token: write
+      contents: read
